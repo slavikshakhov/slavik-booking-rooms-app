@@ -1,25 +1,70 @@
 export default {
-    state: {
-        /*
-        data1: {
-            x: null,
-            y: null
-        }
-        */
+  state: {
+    lastSearch: {
+      from: null,
+      to: null,
     },
-    mutations: {
-        /*
-        setData1(state, payload) {
-            state.data1 = payload;
-        }
-        */
+    basket: {
+      items: [],
     },
-    actions: {
-        /*
-        setData1(context, payload) {
-            context.commit("setData1", payload);
-            
-        }
-        */
-    }
-};
+  },
+  mutations: {
+    setLastSearch(state, payload) {
+      state.lastSearch = payload
+    },
+    addToBasket(state, payload) {
+      state.basket.items.push(payload)
+    },
+    removeFromBasket(state, payload) {
+      state.basket.items = state.basket.items.filter(
+        (item) => item.room.id !== payload,
+      )
+    },
+    setBasket(state, payload) {
+      state.basket = payload
+    },
+  },
+  actions: {
+    setLastSearch(context, payload) {
+      context.commit('setLastSearch', payload)
+      localStorage.setItem('lastSearch', JSON.stringify(payload))
+    },
+    loadStoredState(context) {
+      const lastSearch = localStorage.getItem('lastSearch')
+      if (lastSearch) {
+        context.commit('setLastSearch', JSON.parse(lastSearch))
+      }
+
+      const basket = localStorage.getItem('basket')
+      if (basket) {
+        context.commit('setBasket', JSON.parse(basket))
+      }
+    },
+    addToBasket({ commit, state }, payload) {
+      //context.commit, context.state
+      // context.state, context.commit
+      commit('addToBasket', payload)
+      localStorage.setItem('basket', JSON.stringify(state.basket))
+    },
+    removeFromBasket({ commit, state }, payload) {
+      commit('removeFromBasket', payload)
+      localStorage.setItem('basket', JSON.stringify(state.basket))
+    },
+    clearBasket({ commit, state }, payload) {
+      commit('setBasket', { items: [] })
+      localStorage.setItem('basket', JSON.stringify(state.basket))
+    },
+  },
+  getters: {
+    itemsInBasket: (state) => state.basket.items.length,
+    inBasketAlready(state) {
+      // inBasketAlready: (state) => (id) => { return ...}
+      return function (id) {
+        return state.basket.items.reduce(
+          (result, item) => result || item.room.id === id,
+          false,
+        )
+      }
+    },
+  },
+}
